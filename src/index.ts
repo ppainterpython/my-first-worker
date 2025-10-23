@@ -17,8 +17,20 @@ import { Ai } from "@cloudflare/ai";
 
 const app = new Hono<{Bindings: Env}>();
 
-// GET /?query="What is the origin of the phrase Hello, World"
-app.get('/', async (c) => {
+// GET /bucket
+app.get('/bucket', async (c) => {
+	try {
+		const bucket = c.env.MY_BUCKET;
+		const objects = await bucket.list();
+		const names = objects.objects.map(obj => obj.key);
+		return c.json({ objects: names });
+	} catch (error) {
+		return c.json({ objects: [] });
+	}
+});
+
+// GET /ai?query="What is the origin of the phrase Hello, World"
+app.get('/ai', async (c) => {
 	try {
 		const ai = new Ai(c.env.AI);
 		const content = c.req.query('query') || "Give me a friendly greeting";
